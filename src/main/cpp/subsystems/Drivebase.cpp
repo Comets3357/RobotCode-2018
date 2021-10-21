@@ -3,36 +3,42 @@
 
 void Drivebase::RobotInit()
 {
-    dbLM.RestoreFactoryDefaults();
-    dbRM.RestoreFactoryDefaults();
-
-    dbLS.RestoreFactoryDefaults();
-    dbRS.RestoreFactoryDefaults();
+    dbLM.ConfigFactoryDefault();
+    dbRM.ConfigFactoryDefault();
+    dbL1.ConfigFactoryDefault();
+    dbR1.ConfigFactoryDefault();
+    dbL2.ConfigFactoryDefault();
+    dbR2.ConfigFactoryDefault();
 
     dbLM.SetInverted(true);
+    dbL1.SetInverted(true);
+    dbL2.SetInverted(true);
     dbRM.SetInverted(false);
+    dbR1.SetInverted(false);
+    dbR2.SetInverted(false);
 
-    dbLS.Follow(dbLM);
-    dbRS.Follow(dbRM);
+    //everything follows the front motors right now; might be wrong but I'm 90% sure it's right
+    dbL1.Follow(dbLM);
+    dbL2.Follow(dbLM);
+    dbR1.Follow(dbRM);
+    dbR2.Follow(dbRM);
 
-    dbRM.SetIdleMode(rev::CANSparkMax::IdleMode::kCoast);
-    dbRS.SetIdleMode(rev::CANSparkMax::IdleMode::kCoast);
-    dbLM.SetIdleMode(rev::CANSparkMax::IdleMode::kCoast);
-    dbLS.SetIdleMode(rev::CANSparkMax::IdleMode::kCoast);
+    dbRM.SetNeutralMode(ctre::phoenix::motorcontrol::NeutralMode::Coast);
+    dbLM.SetNeutralMode(ctre::phoenix::motorcontrol::NeutralMode::Coast);
+    dbR1.SetNeutralMode(ctre::phoenix::motorcontrol::NeutralMode::Coast);
+    dbL1.SetNeutralMode(ctre::phoenix::motorcontrol::NeutralMode::Coast);
+    dbR2.SetNeutralMode(ctre::phoenix::motorcontrol::NeutralMode::Coast);
+    dbL2.SetNeutralMode(ctre::phoenix::motorcontrol::NeutralMode::Coast);
 
-    dbLM.SetSmartCurrentLimit(45);
-    dbRM.SetSmartCurrentLimit(45);
-    dbLS.SetSmartCurrentLimit(45);
-    dbRS.SetSmartCurrentLimit(45);
+    // dbLM.ConfigContinuousCurrentLimit(45); //might be the wrong function but it needs to set the current limit
+    // dbRM.ConfigContinuousCurrentLimit(45);
+    // dbL1.ConfigContinuousCurrentLimit(45); //allegedly the VictorSPX motors don't have current limits but I'm keeping this just in case
+    // dbR1.ConfigContinuousCurrentLimit(45);
+    // dbL2.ConfigContinuousCurrentLimit(45);
+    // dbR2.ConfigContinuousCurrentLimit(45);
 
-    dbLM.Set(0);
-    dbRM.Set(0);
-
-    //again, used for pid testing
-    dbLM.BurnFlash();
-    dbRM.BurnFlash();
-    dbLS.BurnFlash();
-    dbRS.BurnFlash();
+    dbLM.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, 0);
+    dbRM.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, 0);
 }
 
 void Drivebase::RobotPeriodic(const RobotData &robotData, DrivebaseData &drivebaseData)
@@ -41,10 +47,12 @@ void Drivebase::RobotPeriodic(const RobotData &robotData, DrivebaseData &driveba
 
     if (frc::DriverStation::GetInstance().IsEnabled())
     {
-        dbRM.SetIdleMode(rev::CANSparkMax::IdleMode::kBrake);
-        dbRS.SetIdleMode(rev::CANSparkMax::IdleMode::kBrake);
-        dbLM.SetIdleMode(rev::CANSparkMax::IdleMode::kBrake);
-        dbLS.SetIdleMode(rev::CANSparkMax::IdleMode::kBrake);
+        dbRM.SetNeutralMode(ctre::phoenix::motorcontrol::NeutralMode::Brake);
+        dbR1.SetNeutralMode(ctre::phoenix::motorcontrol::NeutralMode::Brake);
+        dbR2.SetNeutralMode(ctre::phoenix::motorcontrol::NeutralMode::Brake);
+        dbLM.SetNeutralMode(ctre::phoenix::motorcontrol::NeutralMode::Brake);
+        dbL1.SetNeutralMode(ctre::phoenix::motorcontrol::NeutralMode::Brake);
+        dbL2.SetNeutralMode(ctre::phoenix::motorcontrol::NeutralMode::Brake);
     }
 
     teleopControl(robotData);
@@ -52,23 +60,26 @@ void Drivebase::RobotPeriodic(const RobotData &robotData, DrivebaseData &driveba
 
 void Drivebase::DisabledInit()
 {
-    dbLM.Set(0);
-    dbRM.Set(0);
-    dbRM.SetIdleMode(rev::CANSparkMax::IdleMode::kCoast);
-    dbRS.SetIdleMode(rev::CANSparkMax::IdleMode::kCoast);
-    dbLM.SetIdleMode(rev::CANSparkMax::IdleMode::kCoast);
-    dbLS.SetIdleMode(rev::CANSparkMax::IdleMode::kCoast);
+    dbLM.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, 0);
+    dbRM.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, 0);
+
+    dbRM.SetNeutralMode(ctre::phoenix::motorcontrol::NeutralMode::Coast);
+    dbLM.SetNeutralMode(ctre::phoenix::motorcontrol::NeutralMode::Coast);
+    dbR1.SetNeutralMode(ctre::phoenix::motorcontrol::NeutralMode::Coast);
+    dbL1.SetNeutralMode(ctre::phoenix::motorcontrol::NeutralMode::Coast);
+    dbR2.SetNeutralMode(ctre::phoenix::motorcontrol::NeutralMode::Coast);
+    dbL2.SetNeutralMode(ctre::phoenix::motorcontrol::NeutralMode::Coast);
 }
 
 // updates encoder and gyro values
 void Drivebase::updateData(const RobotData &robotData, DrivebaseData &drivebaseData)
 {
-    //add back wheel encoders at some point
-    drivebaseData.currentLDBPos = dbLMEncoder.GetPosition();
-    drivebaseData.currentRDBPos = dbRMEncoder.GetPosition();
+    // add back wheel encoders at some point
+    // drivebaseData.currentLDBPos = dbLMEncoder.GetPosition();
+    // drivebaseData.currentRDBPos = dbRMEncoder.GetPosition();
 
-    drivebaseData.lDriveVel = dbRMEncoder.GetVelocity();
-    drivebaseData.rDriveVel = dbLMEncoder.GetVelocity();
+    // drivebaseData.lDriveVel = dbR1Encoder.GetVelocity();
+    // drivebaseData.rDriveVel = dbL1Encoder.GetVelocity();
 }
 // driving functions:
 
@@ -102,6 +113,6 @@ void Drivebase::teleopControl(const RobotData &robotData)
     }
 
     //set as percent vbus
-    dbLM.Set(tempLDrive);
-    dbRM.Set(tempRDrive);
+    dbL1.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, tempLDrive);
+    dbR1.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, tempRDrive);
 }

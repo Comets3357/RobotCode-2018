@@ -7,6 +7,8 @@
 #include <frc/TimedRobot.h>
 #include <rev/CANSparkMax.h>
 #include <rev/CANEncoder.h>
+#include <ctre/phoenix/motorcontrol/can/TalonSRX.h>
+#include <ctre/phoenix.h>
 
 struct RobotData;
 
@@ -32,17 +34,12 @@ private:
     void updateData(const RobotData &robotData, DrivebaseData &drivebaseData);
     void teleopControl(const RobotData &robotData);
 
-    rev::CANSparkMax dbLM{leftLeadDeviceID, rev::CANSparkMax::MotorType::kBrushless};
-    rev::CANSparkMax dbRM{rightLeadDeviceID, rev::CANSparkMax::MotorType::kBrushless};
-    rev::CANSparkMax dbLS{leftFollowDeviceID, rev::CANSparkMax::MotorType::kBrushless};
-    rev::CANSparkMax dbRS{rightFollowDeviceID, rev::CANSparkMax::MotorType::kBrushless};
-
-    rev::CANEncoder dbRMEncoder = dbRM.GetEncoder();
-    rev::CANEncoder dbLMEncoder = dbLM.GetEncoder();
-    rev::CANEncoder dbRSEncoder = dbRS.GetEncoder();
-    rev::CANEncoder dbLSEncoder = dbLS.GetEncoder();
-    rev::CANPIDController dbRMPID = dbRM.GetPIDController();
-    rev::CANPIDController dbLMPID = dbLM.GetPIDController();
+    ctre::phoenix::motorcontrol::can::TalonSRX dbLM{leftFrontDeviceID};
+    ctre::phoenix::motorcontrol::can::TalonSRX dbRM{rightFrontDeviceID};
+    ctre::phoenix::motorcontrol::can::VictorSPX dbL1{leftMiddleDeviceID};
+    ctre::phoenix::motorcontrol::can::VictorSPX dbR1{rightMiddleDeviceID};
+    ctre::phoenix::motorcontrol::can::VictorSPX dbL2{leftBackDeviceID};
+    ctre::phoenix::motorcontrol::can::VictorSPX dbR2{rightBackDeviceID};
 
     // no encoders for db motors
     // initialize PID controllers?
