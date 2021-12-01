@@ -113,6 +113,6 @@ void Drivebase::teleopControl(const RobotData &robotData)
     }
 
     //set as percent vbus
-    dbL1.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, tempLDrive);
-    dbR1.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, tempRDrive);
+    dbLM.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, tempLDrive);
+    dbRM.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, tempRDrive);
 }
